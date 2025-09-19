@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Формула простых чисел с функцией Ламберта</title>
+    <style>
+	@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+            background: linear-gradient(135deg, #f9f9f9 0%, #e6f0ff 100%);
+            background-attachment: fixed;
+			text-align: justify;
+			text-justify: inter-word;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .abstract {
+            background-color: #e8f4f8;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            font-style: italic;
+            border-left: 5px solid #3498db;
+			text-align: justify;
+			text-justify: inter-word;
+        }
+        .formula {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #ddd;
+            text-align: center;
+            font-size: 18px;
+            overflow-x: auto;
+        }
+        .formula-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .formula-tex {
+            font-size: 22px;
+            padding: 10px;
+        }
+        .formula-equivalent {
+            margin-top: 10px;
+            font-style: italic;
+            color: #7f8c8d;
+        }
+        .example {
+            background-color: #e8f8e8;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-left: 5px solid #27ae60;
+        }
+        .conclusion {
+            background-color: #fef9e7;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-left: 5px solid #f39c12;
+        }
+        .highlight {
+            background-color: #fffacd;
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .interactive {
+            background-color: #f4ecf7;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-left: 5px solid #8e44ad;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            color: #7f8c8d;
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+            .formula {
+                font-size: 16px;
+                padding: 15px;
+            }
+            .formula-tex {
+                font-size: 18px;
+            }
+        }
+    </style>
+    <script>
+        // Простая реализация функции Ламберта через итерации Ньютона
+        function lambertW(x, maxIter = 100, tol = 1e-8) {
+            if (x < -1/Math.E) return NaN;
+            let w = 0;
+            for (let i = 0; i < maxIter; i++) {
+                let ew = Math.exp(w);
+                let wNew = w - (w * ew - x) / (ew * (w + 1) - (w + 2) * (w * ew - x) / (2 * w + 2));
+                if (Math.abs(wNew - w) < tol) return wNew;
+                w = wNew;
+            }
+            return w;
+        }
+
+        // Функция для вычисления p по K
+        function calculateP() {
+            const K = parseFloat(document.getElementById('KValue').value);
+            if (isNaN(K) || K <= 0) {
+                document.getElementById('result').innerHTML = 
+                    '<p style="color: red;">Пожалуйста, введите положительное число для K.</p>';
+                return;
+            }
+
+            const ln2 = Math.log(2);
+            const arg = -ln2 / (2 * K);
+            
+            if (arg < -1/Math.E) {
+                document.getElementById('result').innerHTML = 
+                    '<p style="color: red;">Невозможно вычислить: аргумент вне области определения функции Ламберта.</p>';
+                return;
+            }
+
+            const W = lambertW(arg);
+            const p = -W / ln2;
+
+            document.getElementById('result').innerHTML = `
+                <p>Для K = ${K}:</p>
+                <p>Аргумент функции Ламберта: ${arg.toFixed(6)}</p>
+                <p>Значение W: ${W.toFixed(6)}</p>
+                <p>Вычисленное p: ${p.toFixed(6)}</p>
+                <p>Проверка: 2<sup>${p.toFixed(2)}-1</sup> / ${p.toFixed(2)} ≈ ${(Math.pow(2, p-1)/p).toFixed(6)}</p>
+                <p>Ожидаемое K: ${K}, полученное K: ${(Math.pow(2, p-1)/p).toFixed(6)}</p>
+            `;
+        }
+    </script>
+</head>
+<body>
+    <div class="header">
+        <h1>Поиск новой формулы для простых чисел: от школьной алгебры к функции Ламберта</h1>
+    </div>
+
+    <div class="abstract">
+        <p>В этой работе предлагается новый взгляд на проблему генерации простых чисел. Используя лишь базовую алгебру и теорию чисел, автор выводит аналитическое выражение, связывающее простое число <span style="color: blue;">p</span> с целочисленным параметром <span style="color: blue;">K</span>, основанное на малой теореме Ферма. Ключевым шагом является использование W-функции Ламберта для получения явной формулы. Этот подход открывает новые возможности для анализа и генерации простых чисел.</p>
+    </div>
+
+    <h2>1. Введение: Постановка задачи</h2>
+    <p>Простые числа — это натуральные числа, большие 1, которые делятся только на 1 и на самих себя. Несмотря на свою простоту, они не подчиняются очевидной закономерности. Веками математики пытались найти «формулу» для простых чисел — выражение, которое гарантированно давало бы простые числа.</p>
+    
+    <p>Известно, что не существует непостоянного многочлена, принимающего только простые значения. Однако существуют другие подходы, такие как теорема Вильсона или константа Миллса, но они непрактичны. В данной статье предлагается новый метод, основанный на классической малой теореме Ферма.</p>
+
+    <h2>2. Основная идея: Связь с малой теоремой Ферма</h2>
+    <p>Малая теорема Ферма утверждает, что если <span style="color: blue;">p</span> — простое число, то для любого целого <span style="color: blue;">a</span>, не кратного <span style="color: blue;">p</span>, выполняется:</p>
+    
+    <div class="formula">
+        <div class="formula-content">
+            <div class="formula-tex">a<sup>p-1</sup> ≡ 1 (mod p)</div>
+        </div>
+    </div>
+    
+    <p>Выберем <span style="color: blue;">a = 2</span>. Тогда для нечётного простого <span style="color: blue;">p</span>:</p>
+    
+    <div class="formula">
+        <div class="formula-content">
+            <div class="formula-tex">2<sup>p-1</sup> ≡ 1 (mod p)</div>
+            <div>⇒</div>
+            <div class="formula-tex">2<sup>p-1</sup> - 1 = K ⋅ p</div>
+        </div>
+    </div>
+    
+    <p>где <span style="color: blue;">K</span> — некоторое целое число. Таким образом, каждому простому <span style="color: blue;">p</span> соответствует целое <span style="color: blue;">K</span>:</p>
+    
+    <div class="formula">
+        <div class="formula-content">
+            <div class="formula-tex">K = (2<sup>p-1</sup> - 1) / p</div>
+        </div>
+    </div>
+    
+    <div class="example">
+        <p>Например:</p>
+        <ul>
+            <li>p = 3: K = (2² - 1)/3 = (4 - 1)/3 = 1</li>
+            <li>p = 5: K = (2⁴ - 1)/5 = (16 - 1)/5 = 15/5 = 3</li>
+            <li>p = 7: K = (2⁶ - 1)/7 = (64 - 1)/7 = 63/7 = 9</li>
+        </ul>
+    </div>
+    
+    <p>Обратное неверно: если <span style="color: blue;">K</span> целое, то <span style="color: blue;">p</span> может быть составным (например, числа Кармайкла). Но для наших целей мы рассматриваем только те <span style="color: blue;">K</span>, которые порождены простыми <span style="color: blue;">p</span>.</p>
+
+    <h2>3. Вывод формулы: От уравнения к функции Ламберта</h2>
+    <p>Мы хотим выразить <span style="color: blue;">p</span> явно через <span style="color: blue;">K</span>. Исходное уравнение:</p>
+    
+    <div class="formula">
+        <div class="formula-content">
+            <div class="formula-tex">2<sup>p-1</sup> - 1 = K ⋅ p</div>
+        </div>
+    </div>
+    
+    <p>Для больших <span style="color: blue;">p</span> выполнено <span style="color: blue;">2<sup>p-1</sup> много больше чем 1</span>, поэтому:</p>
+    
+    <div class="formula">
+        <div class="formula-content">
+            <div class="formula-tex">2<sup>p-1</sup> ≈ K ⋅ p</div>
+        </div>
+    </div>
+    
+    <p>Логарифмируем:</p>
+    
+    <div class="formula">
+        <div class="formula-content">
+            <div class="formula-tex">(p-1) ⋅ ln(2) ≈ ln(K) + ln(p)</div>
+        </div>
+    </div>
+    
+    <p>Переносим слагаемые:</p>
+    
+    <div class="formula">
+        <div class="formula-content">
+            <div class="formula-tex">p ⋅ ln(2) - ln(p) ≈ ln(K) + ln(2)</div>
+        </div>
+    </div>
+    
+    <p>Заметим, что левая часть равна <span style="color: blue;">ln( 2<sup>p</sup> / p )</span>. Поэтому:</p>
+    
+    <div class="formula">
+        <div class="formula-content">
+            <div class="formula-tex">2<sup>p</sup> / p ≈ 2K</div>
+        </div>
+    </div>
+    
+    <p>Теперь решаем относительно <span style="color: blue;">p</span>:</p>
+    
+    <div class="formula">
+        <div class="formula-content">
+            <div class="formula-tex">2<sup>p</sup> = 2K ⋅ p</div>
+            <div>⇒</div>
+            <div class="formula-tex">p ⋅ 2<sup>-p</sup> = 1/(2K)</div>
+        </div>
+    </div>
+    
+    <p>Умножаем на <span style="color: blue;">-ln(2)</span>:</p>
+    
+    <div class="formula">
+        <div class="formula-content">
+            <div class="formula-tex">-p ⋅ ln(2) ⋅ e<sup>-p ⋅ ln(2)</sup> = -ln(2)/(2K)</div>
+        </div>
+    </div>
+    
+    <p>Обозначим <span style="color: blue;">z = -p · ln(2)</span>. Тогда:</p>
+    
+    <div class="formula">
+        <div class="formula-content">
+            <div class="formula-tex">z ⋅ e<sup>z</sup> = -ln(2)/(2K)</div>
+        </div>
+    </div>
+    
+    <p>По определению, <span style="color: blue;">z = W( - ln(2) / 2K )</span>, где <span style="color: blue;">W</span> — функция Ламберта. Следовательно:</p>
+    
+    <div class="formula">
+        <div class="formula-content">
+            <div class="formula-tex">-p ⋅ ln(2) = W( -ln(2)/(2K) )</div>
+            <div>⇒</div>
+            <div class="formula-tex">p = -W( -ln(2)/(2K) ) / ln(2)</div>
+        </div>
+    </div>
+    
+    <p>Это и есть искомая аналитическая формула.</p>
+
+    <h2>4. Пояснение и примеры</h2>
+    <p>Функция Ламберта <span style="color: blue;">W(z)</span> определяется как решение уравнения <span style="color: blue;">W(z) · e<sup>W(z)</sup> = z</span>. Для отрицательных аргументов (как в нашем случае) необходимо выбирать подходящую ветвь.</p>
+    
+    <p>Для больших <span style="color: blue;">K</span> аргумент <span style="color: blue;">-ln(2)/(2K)</span> близок к нулю. Используем приближение <span style="color: blue;">W(z) ≈ z</span> для малых <span style="color: blue;">z</span>:</p>
+    
+    <div class="formula">
+        <div class="formula-content">
+            <div class="formula-tex">p ≈ -1/ln(2) ⋅ ( -ln(2)/(2K) ) = 1/(2K)</div>
+        </div>
+        <div class="formula-equivalent">(грубая оценка)</div>
+    </div>
+    
+    <p>Более точное приближение:</p>
+    
+    <div class="formula">
+        <div class="formula-content">
+            <div class="formula-tex">p ≈ ln(K)/ln(2) + ln(ln(K))/ln(2) + C</div>
+        </div>
+    </div>
+    
+    <p>где <span style="color: blue;">C</span> — постоянная. Например, для <span style="color: blue;">K = 93</span> (<span style="color: blue;">при p = 11</span>):</p>
+    
+    <div class="formula">
+        <div class="formula-content">
+            <div class="formula-tex">ln(93)/0.693 + ln(ln(93))/0.693 ≈ 4.53/0.693 + 1.51/0.693 ≈ 6.54 + 2.18 = 8.72</div>
+        </div>
+    </div>
+    
+    <p>что близко к 11 после добавления поправки.</p>
+    
+    <p>Точная формула с <span style="color: blue;">W</span>-функцией работает лучше для больших <span style="color: blue;">p</span>.</p>
+
+    <div class="interactive">
+        <h3>Калькулятор для проверки формулы</h3>
+        <p>Введите значение K (например, 3, 9, 93, 315):</p>
+        <input type="number" id="KValue" placeholder="Введите K" step="any" min="0.1">
+        <button onclick="calculateP()">Вычислить p</button>
+        <div class="result" id="result">
+            <p>Результаты вычислений появятся здесь.</p>
+        </div>
+    </div>
+
+    <div class="conclusion">
+        <h2>5. Заключение и перспективы</h2>
+        <p>Мы вывели новое аналитическое представление для простых чисел, связанное с функцией Ламберта:</p>
+        
+        <div class="formula">
+            <div class="formula-content">
+                <div class="formula-tex">p = -W( -ln(2)/(2K) ) / ln(2)</div>
+            </div>
+        </div>
+        
+        <p>где <span style="color: blue;">K = (2<sup>p-1</sup> - 1) / p</span>. Это представление связывает простые числа с хорошо изученной функцией Ламберта.</p>
+        
+        <p><strong>Преимущества подхода:</strong></p>
+        <ul>
+            <li>Данное аналитическое представление является новым и не встречалось ранее в литературе.</li>
+            <li>Оно открывает новый теоретический путь для анализа свойств последовательностей, связанных с простыми числами.</li>
+            <li>Предлагает новый теоретический взгляд на взаимосвязь между простыми числами и последовательностями, порождаемыми малой теоремой Ферма.</li>
+        </ul>
+        
+        <p><strong>Дальнейшие шаги:</strong></p>
+        <ul>
+            <li>Исследовать поведение <span style="color: blue;">W</span>-функции для соответствующих аргументов.</li>
+            <li>Найти поправочные члены для повышения точности.</li>
+            <li>Исследовать свойства последовательности <span style="color: blue;">K(p)</span> и её связь с другими функциями в теории чисел.</li>
+        </ul>
+        
+        <p>Эта работа демонстрирует, что даже с помощью базовой математики можно получить нетривиальные результаты, углубляющие наше понимание простых чисел.</p>
+    </div>
+
+    <div class="footer">
+        <p>© 2025 Петров И. Все права защищены.</p>
+    </div>
+	    <div class="disclaimer" style="
+        font-size: 0.8em;
+        color: #7f8c8d;
+        text-align: center;
+        margin-top: 20px;
+        padding: 15px;
+        border-top: 1px solid #eee;
+    ">
+        <p><strong>ID: aaaba6dd56988751928f604c82196d4f55718cdfe8b044e34f274a5ee91b0b95</strong></p>	
+        <p><strong>Отказ от ответственности & Конфиденциальность & Приоритет</strong></p>
+        <p>Данная страница является исключительно частным исследовательским материалом, плодом интеллектуального труда автора. На момент её публикации автору не были известны аналогичные работы, выражающие простые числа через функцию Ламберта данным конкретным способом. Если подобные работы существуют, приоритет и авторские права, безусловно, остаются за их создателями.</p>
+        <p>Автор не несёт ответственности за точность вычислений или возможное использование представленной информации. Страница не собирает, не обрабатывает и не хранит никакие персональные данные или файлы cookie.</p>
+    </div>
+</body>
+</html>
